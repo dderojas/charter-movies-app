@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components'
+import { CollapsibleMovieContainer } from './components'
 
 
 type MoviesListObject = {
@@ -16,15 +17,6 @@ const ImageContainer = styled.img`
   border-width: 1px;
   border-color: #999999;
   object-fit: cover;
-`
-
-const MovieContainer = styled.div`
-  display: flex;
-  align-items: center;
-  border: 0;
-  border-bottom: 0.5px solid #f2f2f2;
-  background-color: white;
-  padding-left: 20px;
 `
 const MovieItem = styled.div`
   display: flex;
@@ -50,9 +42,9 @@ const TextInput = styled.input`
 const App = () => {
   const [moviesList, setMovies] = useState([])
   const [filteredMovies, setFilteredMovies] = useState([])
-  const [genres, setGeners] = useState<string[]>([])
+  const [genres, setGenres] = useState<string[]>([])
   const inputRef = useRef<HTMLInputElement>(null)
-  
+
   useEffect(() => {
     const headers: RequestInit = {
       method: 'GET',
@@ -68,13 +60,23 @@ const App = () => {
       const results = await fetch(`https://code-challenge.spectrumtoolbox.com/api/movies`, headers)
       const movies = await results.json()
 
-      console.log(movies, 'asdlfkasd')
+      const movieGenres: string[] = ['All']
+
+      movies.data.forEach((elem: MoviesListObject) => {
+        elem.genres.forEach((genre) => {
+          if (!movieGenres.includes(genre)) {
+            movieGenres.push(genre)
+          }
+        })
+      })
+
       setMovies(movies.data)
+      setGenres(movieGenres)
     })()
   }, [])
   
-  const handleChange = (e: any) => {
-    const reg = new RegExp(e.target.value, 'i')
+  const handleChange = () => {
+    const reg = new RegExp(inputRef.current?.value || '', 'i')
 
     const results = moviesList.filter((elem: MoviesListObject) => 
       reg.test(elem.title))
@@ -82,24 +84,15 @@ const App = () => {
     setFilteredMovies(results)
   }
 
-  const listFunc = (elem: MoviesListObject) => {
-    const genreResults: string[] = []
-
-    elem.genres.forEach((genre) => {
-      if (!genres.includes(genre)) {
-        genreResults.push(genre)
-      }
-    })
+  const listFunc = (elem: MoviesListObject, index: number) => {
     
-    setGeners([...genreResults])
-
     return (
-      <MovieContainer>
+      <CollapsibleMovieContainer key={index} open>
         <ImageContainer src={doesImageExist(elem.id)} alt=""/>
         <MovieItem>
           {elem.title}
         </MovieItem>
-      </MovieContainer>
+      </CollapsibleMovieContainer>
     )
 }
 
@@ -115,6 +108,11 @@ const App = () => {
   return (
     <div className="App">
       <TextInput ref={inputRef} placeholder='Search by Title' onChange={handleChange}/>
+      <select>
+        {genres.map((elem, index) => {
+          return <option key={index}>{elem}</option>
+        })}
+      </select>
       {inputRef?.current?.value.length ? filteredMovies.map(listFunc) : moviesList.map(listFunc)}
     </div>
   );
