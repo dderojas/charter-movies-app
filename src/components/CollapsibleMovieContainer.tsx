@@ -25,7 +25,8 @@ const CollapsibleMovieContainer = ({ children, open }: Props) => {
   return (
     <MovieContainer onClick={handleClick}>
       {children[0]}
-      {isOpen && children[1]}
+      {children[1]}
+      {isOpen && children[2]}
     </MovieContainer>
   )
 }

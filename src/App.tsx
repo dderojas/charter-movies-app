@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import styled from 'styled-components'
 import { CollapsibleMovieContainer } from './components'
 
@@ -43,6 +43,7 @@ const App = () => {
   const [moviesList, setMovies] = useState([])
   const [filteredMovies, setFilteredMovies] = useState([])
   const [genres, setGenres] = useState<string[]>([])
+  const [filterState, setFilterState] = useState('All')
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -75,23 +76,42 @@ const App = () => {
     })()
   }, [])
   
-  const handleChange = () => {
+  
+  const filterFunc = useCallback(() => {
     const reg = new RegExp(inputRef.current?.value || '', 'i')
 
-    const results = moviesList.filter((elem: MoviesListObject) => 
-      reg.test(elem.title))
+    const results = moviesList.filter((elem: MoviesListObject) => {
+
+      if (filterState === 'All') {
+        return reg.test(elem.title)
+      } else {
+        return reg.test(elem.title) && elem.genres.includes(filterState)
+      }
+    })
 
     setFilteredMovies(results)
+  }, [filterState, moviesList])
+
+  useEffect(() => {
+    if (filterState !== 'All') {
+      filterFunc()
+    }
+  }, [filterState, filterFunc])
+
+
+  const handleFilterChange = (e: any) => {
+    setFilterState(e.target.value)
   }
 
   const listFunc = (elem: MoviesListObject, index: number) => {
     
     return (
-      <CollapsibleMovieContainer key={index} open>
+      <CollapsibleMovieContainer key={index} open={false}>
         <ImageContainer src={doesImageExist(elem.id)} alt=""/>
         <MovieItem>
           {elem.title}
         </MovieItem>
+        <div>{elem.genres.map((item) => <div>{item}</div>)}</div>
       </CollapsibleMovieContainer>
     )
 }
@@ -105,15 +125,23 @@ const App = () => {
     }
   }
 
+  const something = () => {
+    if (filteredMovies.length === 0) {
+      return <div>NOTHING</div>
+    }
+    
+    return filteredMovies.map(listFunc)
+  }
+  
   return (
     <div className="App">
-      <TextInput ref={inputRef} placeholder='Search by Title' onChange={handleChange}/>
-      <select>
+      <TextInput ref={inputRef} placeholder='Search by Title' onChange={filterFunc}/>
+      <select value={filterState} onChange={handleFilterChange}>
         {genres.map((elem, index) => {
           return <option key={index}>{elem}</option>
         })}
       </select>
-      {inputRef?.current?.value.length ? filteredMovies.map(listFunc) : moviesList.map(listFunc)}
+      {inputRef?.current?.value.length || filterState !== 'All' ? something() : moviesList.map(listFunc)}
     </div>
   );
 }
