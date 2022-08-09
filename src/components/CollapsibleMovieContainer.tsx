@@ -1,14 +1,6 @@
 import { useState } from 'react';
-import styled from 'styled-components';
+import { MovieContainer } from '../styles/styledContainers';
 
-const MovieContainer = styled.div`
-  display: flex;
-  align-items: center;
-  border: 0;
-  border-bottom: 0.5px solid #f2f2f2;
-  background-color: white;
-  padding-left: 20px;
-`
 type Props = {
   children: JSX.Element[]
   open: Boolean
