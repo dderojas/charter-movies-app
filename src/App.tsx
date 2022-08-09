@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import styled from 'styled-components'
-import { CollapsibleMovieContainer } from './components'
+import { TextInput, MovieItem, Select } from './styles/styledContainers';
+import { listFunc } from './utils/utils'
 
 
 type MoviesListObject = {
@@ -8,36 +8,6 @@ type MoviesListObject = {
   title: string;
   genres: string[];
 }
-
-const ImageContainer = styled.img`
-  width: 100px;
-  height: 100px;
-  border-radius: 50px;
-  border-style: solid;
-  border-width: 1px;
-  border-color: #999999;
-  object-fit: cover;
-`
-const MovieItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin-left: 50px;
-  padding-bottom: 20px;
-`
-
-const TextInput = styled.input`
-  border: 0;
-  outline: 0;
-  background: transparent;
-  border-bottom: 1px solid #999999;
-  margin-left: 10px;
-  width: 90%;
-  padding: 20px;
-  font-size: 20px;
-  &:focus {
-    border-color: black;
-  }
-`
 
 const App = () => {
   const [moviesList, setMovies] = useState([])
@@ -51,7 +21,7 @@ const App = () => {
       method: 'GET',
       headers: {
         'Content-type': 'application/json',
-        'Authorization': 'Api-Key q3MNxtfep8Gt'
+        'Authorization': process.env.REACT_APP_AUTHORIZATION || ''
       },
       mode: 'cors',
       cache: 'default',
@@ -92,6 +62,7 @@ const App = () => {
     setFilteredMovies(results)
   }, [filterState, moviesList])
 
+
   useEffect(() => {
     if (filterState !== 'All') {
       filterFunc()
@@ -103,45 +74,19 @@ const App = () => {
     setFilterState(e.target.value)
   }
 
-  const listFunc = (elem: MoviesListObject, index: number) => {
-    
-    return (
-      <CollapsibleMovieContainer key={index} open={false}>
-        <ImageContainer src={doesImageExist(elem.id)} alt=""/>
-        <MovieItem>
-          {elem.title}
-        </MovieItem>
-        <div>{elem.genres.map((item) => <div>{item}</div>)}</div>
-      </CollapsibleMovieContainer>
-    )
-}
 
-  // check to see if this is the best way
-  const doesImageExist = (id: string) => {
-    try {
-      return require(`./movieHeroImages/${id}.jpeg`)
-    } catch(e) {
-      return require(`./movieHeroImages/defaultImage.jpeg`)
-    }
-  }
+  const filterResults = filteredMovies.map(listFunc).length === 0 ? (<MovieItem>No results were found</MovieItem>) : filteredMovies.map(listFunc)
 
-  const something = () => {
-    if (filteredMovies.length === 0) {
-      return <div>NOTHING</div>
-    }
-    
-    return filteredMovies.map(listFunc)
-  }
-  
+
   return (
     <div className="App">
       <TextInput ref={inputRef} placeholder='Search by Title' onChange={filterFunc}/>
-      <select value={filterState} onChange={handleFilterChange}>
+      <Select value={filterState} onChange={handleFilterChange}>
         {genres.map((elem, index) => {
           return <option key={index}>{elem}</option>
         })}
-      </select>
-      {inputRef?.current?.value.length || filterState !== 'All' ? something() : moviesList.map(listFunc)}
+      </Select>
+      {inputRef?.current?.value.length || filterState !== 'All' ? filterResults : moviesList.map(listFunc)}
     </div>
   );
 }
