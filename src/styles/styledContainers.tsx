@@ -47,7 +47,7 @@ const Select = styled.select`
   background-color: #808080;
 `
 
-const Details = styled.div`
+const Details = styled.span`
   display: flex;
   align-items: center;
   border: 0;

@@ -46,7 +46,9 @@ const App = () => {
     })()
   }, [])
   
-  
+  // without useCallback the app would create a new filterFunc function on every render
+  // and since the useEffect that's using filterFunc as a dependency runs everytime
+  // a dependency changes it's gonna infinite loop
   const filterFunc = useCallback(() => {
     const reg = new RegExp(inputRef.current?.value || '', 'i')
 
