@@ -28,7 +28,8 @@ const App = () => {
     };
 
     (async () => {
-      const results = await fetch(`https://code-challenge.spectrumtoolbox.com/api/movies`, headers)
+      // broken link, need new endpoint
+      const results = await fetch(`https://spectrumtoolbox.com/api/movies`, headers)
       const movies = await results.json()
 
       const movieGenres: string[] = ['All']
